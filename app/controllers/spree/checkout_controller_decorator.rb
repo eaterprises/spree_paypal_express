@@ -369,6 +369,7 @@ module Spree
 
       msg = "#{I18n.t('gateway_error')}: #{text}"
       logger.error(msg)
+      Bugsnag.notify(RuntimeError.new("spree_paypal_express gateway error"), {:response => response})
       flash[:error] = msg
     end
 
