@@ -68,7 +68,7 @@ module Spree
 
         @order.special_instructions = @ppx_details.params["note"]
 
-        unless payment_method.preferred_no_shipping
+        unless payment_method.preferred_no_shipping || true # Do not save ship address from paypal - we're using the distributors address instead and this process is error-prone
           ship_address = @ppx_details.address
           order_ship_address = Spree::Address.new :firstname  => @ppx_details.params["first_name"],
                                                   :lastname   => @ppx_details.params["last_name"],
