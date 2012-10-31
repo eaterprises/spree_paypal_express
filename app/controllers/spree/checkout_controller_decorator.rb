@@ -68,7 +68,7 @@ module Spree
 
         @order.special_instructions = @ppx_details.params["note"]
 
-        unless payment_method.preferred_no_shipping || true # Do not save ship address from paypal - we're using the distributors address instead and this process is error-prone
+        unless payment_method.preferred_no_shipping
           ship_address = @ppx_details.address
           order_ship_address = Spree::Address.new :firstname  => @ppx_details.params["first_name"],
                                                   :lastname   => @ppx_details.params["last_name"],
@@ -99,10 +99,13 @@ module Spree
             end
           end
 
-          order_ship_address.save!
-
-          @order.ship_address = order_ship_address
-          @order.bill_address ||= order_ship_address
+          if order_ship_address.save
+            @order.ship_address = order_ship_address
+            @order.bill_address ||= order_ship_address
+          else
+            Bugsnag.notify(RuntimeError.new("spree_paypal_express paypal_confirm: Error when saving order_ship_address"),
+                           {:order_ship_address_errors => order_ship_address.errors})
+          end
         end
         @order.state = "payment"
         @order.save
