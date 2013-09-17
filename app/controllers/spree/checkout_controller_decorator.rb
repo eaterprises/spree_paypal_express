@@ -96,7 +96,11 @@ module Spree
           else
             order_ship_address.state_name = ship_address["state"]
           end
-          order_ship_address.save!
+
+          unless order_ship_address.save
+            Bugsnag.notify(RuntimeError.new('State blank on paypal response'), {ppx_details: @ppx_details})
+            raise "Validation failed: State can't be blank"
+          end
 
           @order.ship_address = order_ship_address
           @order.bill_address ||= order_ship_address
