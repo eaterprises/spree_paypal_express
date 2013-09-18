@@ -90,7 +90,12 @@ module Spree
                                                   # phone is currently blanked in AM's PPX response lib
                                                   :phone      => @ppx_details.params["phone"] || "(not given)"
 
-          state = Spree::State.find_by_abbr(ship_address["state"].upcase) if ship_address["state"].present?
+          if ship_address["state"].present?
+            # Australia has state abbreviations of varying capitalisation
+            # eg. 'WA', 'Vic'
+            state = Spree::State.find_by_abbr(ship_address["state"].upcase) ||
+                    Spree::State.find_by_abbr(ship_address["state"].capitalize)
+          end
           if state
             order_ship_address.state = state
           else
